@@ -45,10 +45,6 @@ cd /opt/Circleator/util/samtools && ./make.sh && cp bam_get_coverage *.pl ../*.p
 # add non-root user
 useradd -ms /bin/bash circleator
 
-# install tutorials in /home/circleator
-cd /opt && curl -LO https://github.com/jonathancrabtree/Circleator/archive/gh-pages.zip && unzip gh-pages.zip
-cp -r /opt/Circleator-gh-pages/tutorials /home/circleator/ && chown -R circleator:circleator /home/circleator/tutorials
-
 # cleanup
 /bin/rm -rf /opt/Circleator-gh-pages /opt/*.gz /opt/*.zip /opt/*.bz2
 ```
