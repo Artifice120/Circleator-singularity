@@ -1,3 +1,63 @@
+### singularity recipe
+
+Copy this recipe into your terminal ( vim or nano )
+
+save the text file as "container-file"
+
+```
+Bootstrap: docker
+
+From: nvidia/cuda:12.9.0-cudnn-devel-ubuntu24.04
+
+Stage: In-house
+
+%labels
+
+PLACEHOLDER
+
+%post
+
+su -  root # USER root
+
+UN apt-get update && apt-get install -y curl
+
+# Perl dependencies
+apt-get install -y libgd-svg-perl libjson-perl libtext-csv-perl liblog-log4perl-perl vcftools libbatik-java libmodule-build-perl make cpanminus bioperl fop
+cpanm Bio::FeatureIO::gff
+
+# Install specific release of Circleator from source
+cd /opt && curl -LO https://github.com/jonathancrabtree/Circleator/archive/1.0.2.tar.gz && tar xzf 1.0.2.tar.gz
+cd /opt/Circleator-1.0.2 && perl Build.PL && ./Build && ./Build install
+cd /opt && ln -s Circleator-1.0.2 Circleator
+
+# Install Circleator from GitHub master branch
+#head -c 5 /dev/random >random2.txt && cd /opt && curl -LO https://github.com/jonathancrabtree/Circleator/archive/master.zip && unzip master.zip
+#cd /opt/Circleator-master && perl Build.PL && ./Build && ./Build install
+#cd /opt && ln -s Circleator-master Circleator
+
+# bam_get_coverage (optional Circleator extra)
+# samtools 1.7 from source
+apt-get install -y libncurses5-dev zlib1g-dev libbz2-dev liblzma-dev gcc libglib2.0-dev
+cd /opt && curl -LO https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2 && tar xjf samtools-1.7.tar.bz2
+cd /opt/samtools-1.7 && ./configure && make
+cd /opt/Circleator/util/samtools && ./make.sh && cp bam_get_coverage *.pl ../*.pl /usr/local/bin/
+
+# add non-root user
+useradd -ms /bin/bash circleator
+
+# install tutorials in /home/circleator
+cd /opt && curl -LO https://github.com/jonathancrabtree/Circleator/archive/gh-pages.zip && unzip gh-pages.zip
+cp -r /opt/Circleator-gh-pages/tutorials /home/circleator/ && chown -R circleator:circleator /home/circleator/tutorials
+
+# cleanup
+/bin/rm -rf /opt/Circleator-gh-pages /opt/*.gz /opt/*.zip /opt/*.bz2
+```
+with apptainer or singularity build the file with:
+
+```
+singularity build Circleator-sing.sif container-file
+```
+This requires Fakeroot to already be installed and configured on your HPC or device 
 
 ### Overview
 
